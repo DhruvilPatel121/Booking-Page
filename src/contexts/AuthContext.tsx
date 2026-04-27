@@ -94,23 +94,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithUsername = async (username: string, password: string) => {
     try {
-      // Apply same sanitization as signup to ensure consistency
-      const sanitizedUsername = username
-        .toLowerCase()
-        // Allow letters, numbers, dots, underscores, hyphens (valid email characters)
-        .replace(/[^a-z0-9._-]/g, '')
-        // Ensure it starts with a letter or number
-        .replace(/^[^a-z0-9]/g, '')
-        // Remove consecutive dots and special characters
-        .replace(/[._-]{2,}/g, '.')
-        // Remove dots at start or end
-        .replace(/^\.+|\.+$/g, '');
+      // Check if username is already a full email address
+      let email: string;
       
-      if (!sanitizedUsername || sanitizedUsername.length < 3) {
-        throw new Error("Username must contain at least 3 alphanumeric characters");
+      if (username.includes('@')) {
+        // Username is already an email, use it directly
+        email = username.toLowerCase().trim();
+      } else {
+        // Username is not an email, create it from username
+        const sanitizedUsername = username
+          .toLowerCase()
+          // Allow letters, numbers, dots, underscores, hyphens (valid email characters)
+          .replace(/[^a-z0-9._-]/g, '')
+          // Ensure it starts with a letter or number
+          .replace(/^[^a-z0-9]/g, '')
+          // Remove consecutive dots and special characters
+          .replace(/[._-]{2,}/g, '.')
+          // Remove dots at start or end
+          .replace(/^\.+|\.+$/g, '');
+        
+        if (!sanitizedUsername || sanitizedUsername.length < 3) {
+          throw new Error("Username must contain at least 3 alphanumeric characters");
+        }
+        
+        email = `${sanitizedUsername}@gmail.com`;
       }
-      
-      const email = `${sanitizedUsername}@gmail.com`;
       
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -126,24 +134,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUpWithUsername = async (username: string, password: string) => {
     try {
-      // Sanitize username for email format - allow valid email characters
-      const sanitizedUsername = username
-        .toLowerCase()
-        // Allow letters, numbers, dots, underscores, hyphens (valid email characters)
-        .replace(/[^a-z0-9._-]/g, '')
-        // Ensure it starts with a letter or number
-        .replace(/^[^a-z0-9]/g, '')
-        // Remove consecutive dots and special characters
-        .replace(/[._-]{2,}/g, '.')
-        // Remove dots at start or end
-        .replace(/^\.+|\.+$/g, '');
+      // Check if username is already a full email address
+      let email: string;
+      let sanitizedUsername: string;
       
-      // Ensure username is not empty after sanitization
-      if (!sanitizedUsername || sanitizedUsername.length < 3) {
-        throw new Error("Username must contain at least 3 alphanumeric characters");
+      if (username.includes('@')) {
+        // Username is already an email, use it directly
+        email = username.toLowerCase().trim();
+        sanitizedUsername = username.split('@')[0]; // Extract username part for metadata
+      } else {
+        // Username is not an email, create it from username
+        sanitizedUsername = username
+          .toLowerCase()
+          // Allow letters, numbers, dots, underscores, hyphens (valid email characters)
+          .replace(/[^a-z0-9._-]/g, '')
+          // Ensure it starts with a letter or number
+          .replace(/^[^a-z0-9]/g, '')
+          // Remove consecutive dots and special characters
+          .replace(/[._-]{2,}/g, '.')
+          // Remove dots at start or end
+          .replace(/^\.+|\.+$/g, '');
+        
+        if (!sanitizedUsername || sanitizedUsername.length < 3) {
+          throw new Error("Username must contain at least 3 alphanumeric characters");
+        }
+        
+        email = `${sanitizedUsername}@gmail.com`;
       }
-      
-      const email = `${sanitizedUsername}@gmail.com`;
       
       // Basic email validation
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
