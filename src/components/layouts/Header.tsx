@@ -70,31 +70,34 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-4 md:gap-6">
           {!isAdminRoute && (
             <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/">Home</Link>
+              </Button>
               <Link
                 to="/venues"
-                className="text-sm text-foreground hover:text-primary transition-colors"
+                className="text-xs md:text-sm text-foreground hover:text-primary transition-colors"
               >
                 Venues
               </Link>
               <Link
                 to="/booking"
-                className="text-sm text-foreground hover:text-primary transition-colors"
+                className="text-xs md:text-sm text-foreground hover:text-primary transition-colors"
               >
                 Book Now
               </Link>
               <Link
                 to="/leaderboard"
-                className="text-sm text-foreground hover:text-primary transition-colors"
+                className="text-xs md:text-sm text-foreground hover:text-primary transition-colors hidden sm:inline"
               >
                 Leaderboard
               </Link>
               {user && (
                 <Link
                   to="/favorites"
-                  className="text-sm text-foreground hover:text-primary transition-colors"
+                  className="text-xs md:text-sm text-foreground hover:text-primary transition-colors"
                 >
                   Favorites
                 </Link>
@@ -149,7 +152,7 @@ export function Header() {
         </nav>
 
         {/* Mobile Navigation */}
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center gap-2 md:hidden">
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">

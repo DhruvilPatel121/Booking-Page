@@ -27,45 +27,24 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
     fetchFavorites();
-  }, [user]);
+  }, []);
 
   const fetchFavorites = async () => {
-    if (!user) return;
-
     try {
-      const { data: favoritesData } = await supabase
-        .from("favorites")
-        .select("venue_id")
-        .eq("user_id", user.id);
+      const favoriteVenueIds = JSON.parse(localStorage.getItem('favoriteVenues') || '[]');
 
-      if (!favoritesData || favoritesData.length === 0) {
+      if (favoriteVenueIds.length === 0) {
         setLoading(false);
         return;
       }
 
-      const venueIds = favoritesData.map((f) => f.venue_id);
+      const { data: venuesData } = await supabase
+        .from("venues")
+        .select("*, sports(*)")
+        .in("id", favoriteVenueIds);
 
-      const [venuesRes, sportsRes] = await Promise.all([
-        supabase.from("venues").select("*").in("id", venueIds),
-        supabase.from("sports").select("*").eq("is_active", true),
-      ]);
-
-      if (venuesRes.error) throw venuesRes.error;
-
-      const sportsData = sportsRes.data || [];
-      const venuesWithSports = (venuesRes.data || []).map((venue) => ({
-        ...venue,
-        sports: sportsData.filter((sport) =>
-          venue.sports_ids.includes(sport.id),
-        ),
-      }));
-
-      setVenues(venuesWithSports);
+      setVenues(venuesData || []);
     } catch (error) {
       toast.error("Failed to load favorites");
     } finally {

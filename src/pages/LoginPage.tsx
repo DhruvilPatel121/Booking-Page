@@ -39,7 +39,7 @@ export default function LoginPage() {
         toast.error(error.message);
       } else {
         toast.success("Admin login successful");
-        navigate(from, { replace: true });
+        navigate("/admin", { replace: true });
       }
     } finally {
       setLoading(false);

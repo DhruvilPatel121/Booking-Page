@@ -211,7 +211,7 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 md:py-12">
+    <div className="min-h-screen bg-background py-4 sm:py-6 md:py-8 lg:py-12">
       <div className="container mx-auto px-4 max-w-2xl">
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -219,8 +219,8 @@ export default function BookingPage() {
         </Button>
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Book Your Slot</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">Book Your Slot</CardTitle>
+            <CardDescription className="text-sm sm:text-base">
               Fill in the details to book your sports slot
             </CardDescription>
             {selectedVenue && (

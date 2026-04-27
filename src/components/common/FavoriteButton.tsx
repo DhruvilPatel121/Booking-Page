@@ -23,54 +23,51 @@ export function FavoriteButton({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      checkFavoriteStatus();
-    }
-  }, [user, venueId]);
+    checkFavoriteStatus();
+  }, [venueId]);
 
-  const checkFavoriteStatus = async () => {
-    if (!user) return;
-
-    const { data } = await supabase
-      .from("favorites")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("venue_id", venueId)
-      .maybeSingle();
-
-    setIsFavorited(!!data);
+  const checkFavoriteStatus = () => {
+    const favorites = JSON.parse(localStorage.getItem('favoriteVenues') || '[]');
+    setIsFavorited(favorites.includes(venueId));
   };
 
   const toggleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
-    if (!user) {
-      toast.error("Please login to add favorites");
-      return;
-    }
-
     setLoading(true);
 
     try {
+      const favorites = JSON.parse(localStorage.getItem('favoriteVenues') || '[]');
+      
       if (isFavorited) {
-        const { error } = await supabase
-          .from("favorites")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("venue_id", venueId);
-
-        if (error) throw error;
+        // Remove from favorites
+        const updatedFavorites = favorites.filter((id: string) => id !== venueId);
+        localStorage.setItem('favoriteVenues', JSON.stringify(updatedFavorites));
         setIsFavorited(false);
         toast.success("Removed from favorites");
+        
+        // If user is logged in, also update database
+        if (user) {
+          await supabase
+            .from("favorites")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("venue_id", venueId);
+        }
       } else {
-        const { error } = await supabase
-          .from("favorites")
-          .insert({ user_id: user.id, venue_id: venueId });
-
-        if (error) throw error;
+        // Add to favorites
+        const updatedFavorites = [...favorites, venueId];
+        localStorage.setItem('favoriteVenues', JSON.stringify(updatedFavorites));
         setIsFavorited(true);
         toast.success("Added to favorites");
+        
+        // If user is logged in, also update database
+        if (user) {
+          await supabase
+            .from("favorites")
+            .insert({ user_id: user.id, venue_id: venueId });
+        }
       }
     } catch (error) {
       toast.error("Failed to update favorites");
@@ -78,8 +75,6 @@ export function FavoriteButton({
       setLoading(false);
     }
   };
-
-  if (!user) return null;
 
   return (
     <Button
