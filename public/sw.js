@@ -1,12 +1,8 @@
 const CACHE_NAME = 'sports-booking-v1';
 const urlsToCache = [
   '/',
-  '/venues',
-  '/booking',
-  '/leaderboard',
-  '/favorites',
-  '/static/js/bundle.js',
-  '/static/css/main.css'
+  '/index.html',
+  '/manifest.json'
 ];
 
 // Install Service Worker
@@ -38,22 +34,30 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
+      .then(cachedResponse => {
         // Return cached version if available
-        if (response) {
-          return response;
+        if (cachedResponse) {
+          return cachedResponse;
         }
 
         // Otherwise fetch from network
         return fetch(event.request)
           .then(response => {
-            // Cache successful responses
-            if (event.request.method === 'GET' && response.ok) {
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, response.clone());
-                });
+            // Don't cache non-GET requests or non-successful responses
+            if (event.request.method !== 'GET' || !response.ok) {
+              return response;
             }
+
+            // Clone the response before caching
+            const responseToCache = response.clone();
+            
+            // Cache the response
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+
+            // Return original response
             return response;
           })
           .catch(() => {

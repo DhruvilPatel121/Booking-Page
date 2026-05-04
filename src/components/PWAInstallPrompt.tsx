@@ -14,7 +14,7 @@ export function PWAInstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 bg-background border border-border rounded-lg shadow-lg p-4 max-w-sm">
+    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:w-[400px] z-[100] bg-background border border-border rounded-lg shadow-lg p-4">
       <div className="flex items-start gap-3">
         <Smartphone className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
         <div className="flex-1 min-w-0">

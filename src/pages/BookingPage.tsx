@@ -29,6 +29,8 @@ import { CalendarIcon, ArrowLeft, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import type { Sport, Slot, SlotWithDetails } from "@/types/types";
+import { PaymentButton } from "@/components/PaymentButton";
+import { PaymentTestButton } from "@/components/PaymentTestButton";
 
 export default function BookingPage() {
   const { user, profile } = useAuth();
@@ -42,8 +44,8 @@ export default function BookingPage() {
     id: string;
     name: string;
     location?: string;
+    sport?: { id: string; name: string };
   } | null>(null);
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || "",
     mobile: profile?.phone || "",
@@ -138,78 +140,7 @@ export default function BookingPage() {
     setSlots(availableSlots);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (
-      !formData.full_name ||
-      !formData.mobile ||
-      !formData.email ||
-      !formData.gender ||
-      !formData.slot_id
-    ) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
-    if (isSlotFull) {
-      toast.error("This slot is full");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data: booking, error: bookingError } = await supabase
-        .from("bookings")
-        .insert({
-          user_id: user?.id || null,
-          slot_id: formData.slot_id,
-          full_name: formData.full_name,
-          mobile: formData.mobile,
-          email: formData.email,
-          gender: formData.gender,
-          booking_amount: selectedSlot?.price || 0,
-          status: "pending",
-        })
-        .select()
-        .single();
-
-      if (bookingError) throw bookingError;
-
-      const { data: checkoutData, error: checkoutError } =
-        await supabase.functions.invoke("create_stripe_checkout", {
-          body: {
-            items: [
-              {
-                name: `${selectedSlot?.sport?.name} - ${selectedSlot?.venue?.name}`,
-                price: selectedSlot?.price || 0,
-                quantity: 1,
-                booking_id: booking.id,
-              },
-            ],
-            currency: "inr",
-          },
-        });
-
-      if (checkoutError) {
-        const errorMsg = await checkoutError?.context?.text();
-        throw new Error(errorMsg || checkoutError.message);
-      }
-
-      if (checkoutData?.data?.url) {
-        window.open(checkoutData.data.url, "_blank");
-        toast.success("Redirecting to payment...");
-      } else {
-        throw new Error("Failed to create checkout session");
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Booking failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  
   return (
     <div className="min-h-screen bg-background py-4 sm:py-6 md:py-8 lg:py-12">
       <div className="container mx-auto px-4 max-w-2xl">
@@ -245,7 +176,7 @@ export default function BookingPage() {
             )}
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="full_name">Full Name</Label>
                 <Input
@@ -387,33 +318,30 @@ export default function BookingPage() {
               )}
 
               {selectedSlot && (
-                <div className="p-4 bg-accent rounded-md space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Venue:</span>
-                    <span className="text-sm">{selectedSlot.venue?.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Booking Amount:</span>
-                    <span className="text-sm font-semibold">
-                      ₹{selectedSlot.price}
-                    </span>
-                  </div>
-                  {isSlotFull && (
-                    <p className="text-sm text-destructive font-medium">
-                      Slot Full
-                    </p>
-                  )}
-                </div>
+                <PaymentButton
+                  amount={selectedSlot.price}
+                  bookingId={`BK-${Date.now()}`}
+                  sportName={selectedSlot.sport?.name || ''}
+                  venueName={selectedSlot.venue?.name || ''}
+                  slotTime={`${selectedSlot.start_time} - ${selectedSlot.end_time}`}
+                  slotDate={selectedSlot.slot_date}
+                  firstName={formData.full_name}
+                  email={formData.email}
+                  phone={formData.mobile}
+                  onPaymentComplete={(success) => {
+                    if (success) {
+                      toast.success('Payment completed successfully!');
+                      // You can navigate to success page or handle post-payment logic here
+                    }
+                  }}
+                />
               )}
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading || !formData.slot_id || isSlotFull}
-              >
-                {loading ? "Processing..." : "Pay Now"}
-              </Button>
-            </form>
+              {/* Payment Test Section */}
+              <div className="border-t pt-4">
+                <PaymentTestButton />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

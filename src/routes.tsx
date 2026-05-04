@@ -6,6 +6,9 @@ import VenueDetailsPage from "./pages/VenueDetailsPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import BookingPage from "./pages/BookingPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+import PaymentPage from "./pages/PaymentPage";
+import PayUSuccessPage from "./pages/PayUSuccessPage";
+import PayUFailurePage from "./pages/PayUFailurePage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import SportsManagement from "./pages/admin/SportsManagement";
@@ -63,9 +66,27 @@ export const routes: RouteConfig[] = [
     public: true,
   },
   {
+    name: "Payment",
+    path: "/payment",
+    element: <PaymentPage />,
+    public: true,
+  },
+  {
     name: "Payment Success",
     path: "/payment-success",
     element: <PaymentSuccessPage />,
+    public: true,
+  },
+  {
+    name: "PayU Success",
+    path: "/payment/success",
+    element: <PayUSuccessPage />,
+    public: true,
+  },
+  {
+    name: "PayU Failure",
+    path: "/payment/failure",
+    element: <PayUFailurePage />,
     public: true,
   },
   {
